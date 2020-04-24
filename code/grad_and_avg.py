@@ -13,7 +13,7 @@ def func(path, save, interval, shape):
     for index, image in enumerate(images):
 
         img = cv2.imread(os.path.join(path, image), cv2.IMREAD_GRAYSCALE)
-        img = cv2.GaussianBlur(img, 3, 1)
+        img = cv2.GaussianBlur(img, (5, 5), 1)
 
         avg += img / interval
 
@@ -31,7 +31,7 @@ def func(path, save, interval, shape):
 
 
 if __name__ == '__main__':
-    path_to_data = 'data/sample_drive'
+    path_to_data = '../data/sample_drive'
     save_path = 'results/res'
 
     img_shape = (2032, 2032)
