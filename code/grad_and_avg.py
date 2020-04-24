@@ -5,6 +5,7 @@ import numpy as np
 
 def func(path, save, interval, shape):
     images = os.listdir(path)
+    images.sort()
     avg = np.zeros(shape)
     grad = np.zeros(shape)
     filename = 'img_cam' + path[-1] + '.jpg'
@@ -12,6 +13,7 @@ def func(path, save, interval, shape):
     for index, image in enumerate(images):
 
         img = cv2.imread(os.path.join(path, image), cv2.IMREAD_GRAYSCALE)
+        img = cv2.GaussianBlur(img, 3, 1)
 
         avg += img / interval
 
