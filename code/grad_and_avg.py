@@ -31,7 +31,7 @@ def func(path, save, interval, shape):
 
 
 if __name__ == '__main__':
-    path_to_data = '../data/sample_drive'
+    path_to_data = 'data/sample_drive'
     save_path = 'results/res'
 
     img_shape = (2032, 2032)
