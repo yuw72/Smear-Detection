@@ -25,7 +25,7 @@ def grad(path, save, shape):
 
 
 if __name__ == '__main__':
-    path_to_data = 'data'
+    path_to_data = 'data/sample_drive'
     save_path = 'results/average_grad'
     img_shape = (2032, 2032)
 

@@ -1,4 +1,8 @@
 # folder for source data
 /data/
 
+# folder for large result data
+/results/res/
+
+# project meta
 /.idea/

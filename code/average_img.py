@@ -26,9 +26,8 @@ if __name__ == '__main__':
     num = 200  # number of samples to take
 
     # pls change to your own directory
-    path_to_data = 'D:/Northwestern University/2020Spring/Geospatial Visualization/HW/HW1/data/'
-    save_path = 'D:/Northwestern University/2020Spring/Geospatial ' \
-                'Visualization/HW/HW1/Smear-Detection/results/average_image'
+    path_to_data = 'data/sample_drive'
+    save_path = 'results/average_image'
     cams = os.listdir(path_to_data)
 
     for cam in cams:
