@@ -25,9 +25,8 @@ def grad(path, save, shape):
 
 
 if __name__ == '__main__':
-    path_to_data = 'D:/Northwestern University/2020Spring/Geospatial Visualization/HW/HW1/data'
-    save_path = 'D:/Northwestern University/2020Spring/Geospatial ' \
-                'Visualization/HW/HW1/Smear-Detection/results/average_grad'
+    path_to_data = 'data'
+    save_path = 'results/average_grad'
     img_shape = (2032, 2032)
 
     cams = os.listdir(path_to_data)

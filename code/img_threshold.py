@@ -3,8 +3,8 @@
 import cv2 
 import numpy as np 
 import os
-image1 = cv2.imread('C:/Users/YUW72/Desktop/Geospacial Visualization/Smear-Detection/results/gaussian_blur/gaussian_blur0.jpg') 
-save_path = 'C:/Users/YUW72\Desktop/Geospacial Visualization/Smear-Detection/results/img_threshold'
+image1 = cv2.imread('results/gaussian_blur/gaussian_blur0.jpg') 
+save_path = 'results/img_threshold'
 img = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY) 
 filename0 = 'img_threshold00.jpg'
 filename1 = 'img_threshold01.jpg'

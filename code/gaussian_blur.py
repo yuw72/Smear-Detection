@@ -19,9 +19,7 @@ if __name__ == '__main__':
     kernel_size = (5, 5)
     sigma = 1
 
-    path_to_data = 'D:/Northwestern University/2020Spring/Geospatial ' \
-                   'Visualization/HW/HW1/Smear-Detection/results/average_image'
-    save_path = 'D:/Northwestern University/2020Spring/Geospatial ' \
-                'Visualization/HW/HW1/Smear-Detection/results/gaussian_blur'
+    path_to_data = 'results/average_image'
+    save_path = 'results/gaussian_blur'
 
     gaussian_blur(path_to_data, kernel_size, sigma, save_path)

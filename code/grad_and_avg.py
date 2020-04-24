@@ -29,9 +29,8 @@ def func(path, save, interval, shape):
 
 
 if __name__ == '__main__':
-    path_to_data = 'D:/Northwestern University/2020Spring/Geospatial Visualization/HW/HW1/data'
-    save_path = 'D:/Northwestern University/2020Spring/Geospatial ' \
-                'Visualization/HW/HW1/Smear-Detection/results/res'
+    path_to_data = 'data'
+    save_path = 'results/res'
 
     img_shape = (2032, 2032)
     cams = os.listdir(path_to_data)
