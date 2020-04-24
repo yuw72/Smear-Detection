@@ -13,11 +13,16 @@ def change_index(img, indices):
         y = i%size
         values.append(img[x,y])
         new_indices.append([x,y])
-    return np.array(new_indices)/size, np.array(values)
+    return normalize(np.array(new_indices)), np.array(values)
 
+def normalize(arr):
+    return 2*arr/128 - 1
+
+def inormalize(arr):
+    return (arr + 1) / 2 * 128
 
 def fit(values, indices, grid, img):
-    iters = 100
+    iters = 10
     poly = PolynomialFeatures(3)
     test_features = poly.fit_transform(grid)
 
@@ -31,23 +36,23 @@ def fit(values, indices, grid, img):
 
         # Calculate difference between I and I0, and find inliners
         diff = np.abs(img - pred)
-        ind = np.argwhere(diff < img*0.1)/img.shape[0]
-        
+        ind = normalize(np.argwhere(diff < img*0.1))
+
         # update indices and values
         indices = np.unique(np.concatenate((indices, ind)), axis=0)
         if len(indices) == img.shape[0] * img.shape[1]:
             break
         values = []
         for index in indices:
-            values.append(img[int(index[0]*img.shape[0]), int(index[1]*img.shape[0])])
+            values.append(img[int(inormalize(index[0])), int(inormalize(index[1]))])
         values = np.array(values).reshape([len(values), 1])
     
     return pred
 
 
 # Read grayscale image
-img = cv2.imread('results/average_image/average_img_cam0.jpg', 0)  # 2032*2032
-grad = cv2.imread('results/average_grad/average_img_cam0.jpg', 0)
+img = cv2.imread('results/average_image/test.png', 0)  # 2032*2032
+grad = cv2.imread('results/average_grad/test.png', 0)
 img = cv2.resize(img, (128, 128))
 grad = cv2.resize(grad, (128, 128))
 
@@ -64,13 +69,15 @@ for i in range(img.shape[0]):
     for j in range(img.shape[1]):
         grid.append([i,j])
 
-I0 = fit(values_i, ind_i, np.array(grid)/img.shape[0], img)
-I0_grad = fit(values_g, ind_g, np.array(grid)/grad.shape[0], grad)
+I0 = fit(values_i, ind_i, normalize(np.array(grid)), img)
+I0_grad = fit(values_g, ind_g, normalize(np.array(grid)), grad)
 
+# Calculate att and scattering
 a = grad / I0_grad
 b = img - I0 * a
 
-bin_ind = np.argwhere(a<-100)
+# Impose binary mask on smear
+bin_ind = np.argwhere(a<-30)
 binary_mask = np.ones((img.shape[0], img.shape[1]))
 for index in bin_ind:
     binary_mask[index[0], index[1]] = 0
@@ -78,8 +85,8 @@ for index in bin_ind:
 plt.subplot(2,2,1)
 plt.imshow(img, cmap='gray')
 plt.subplot(2,2,2)
-plt.imshow(binary_mask, cmap='gray')
-# plt.subplot(2,2,3)
-# plt.imshow(b, cmap='gray', vmin=b_min, vmax=b_max)
+plt.imshow(a, cmap='gray')
+plt.subplot(2,2,3)
+plt.imshow(b, cmap='gray')
 plt.show()
 
