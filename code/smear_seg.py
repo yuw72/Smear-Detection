@@ -13,30 +13,30 @@ def change_index(img, indices):
         y = i%size
         values.append(img[x,y])
         new_indices.append([x,y])
-    return normalize(np.array(new_indices)), np.array(values)
+    return normalize(np.array(new_indices), img.shape[0]), np.array(values)
 
-def normalize(arr):
-    return 2*arr/128 - 1
+def normalize(arr, vmax):
+    return 2*arr/vmax - 1  # to [-1,1]
 
-def inormalize(arr):
-    return (arr + 1) / 2 * 128
+def inormalize(arr, vmax):
+    return (arr + 1) / 2 * vmax
 
 def fit(values, indices, grid, img):
     iters = 10
-    poly = PolynomialFeatures(3)
-    test_features = poly.fit_transform(grid)
 
     for i in range(iters):
+        poly = PolynomialFeatures(3)
         features = poly.fit_transform(indices)
         reg = LinearRegression().fit(features, values)
 
         # test
+        test_features = poly.fit_transform(grid)
         pred = reg.predict(test_features)
         pred = np.array(pred.reshape(img.shape[0], img.shape[0]))
 
         # Calculate difference between I and I0, and find inliners
         diff = np.abs(img - pred)
-        ind = normalize(np.argwhere(diff < img*0.1))
+        ind = normalize(np.argwhere(diff < img*0.1), img.shape[0])
 
         # update indices and values
         indices = np.unique(np.concatenate((indices, ind)), axis=0)
@@ -44,17 +44,17 @@ def fit(values, indices, grid, img):
             break
         values = []
         for index in indices:
-            values.append(img[int(inormalize(index[0])), int(inormalize(index[1]))])
+            values.append(img[int(inormalize(index[0], img.shape[0])), int(inormalize(index[1], img.shape[0]))])
         values = np.array(values).reshape([len(values), 1])
     
     return pred
 
 
 # Read grayscale image
-img = cv2.imread('results/average_image/test.png', 0)  # 2032*2032
+img = cv2.imread('results/average_image/test.png', 0)
 grad = cv2.imread('results/average_grad/test.png', 0)
-img = cv2.resize(img, (128, 128))
-grad = cv2.resize(grad, (128, 128))
+img = cv2.resize(img, (512, 512))
+grad = cv2.resize(grad, (512, 512))
 
 # Find the top 50% pixels
 tot_pixels = img.shape[0] * img.shape[1]
@@ -69,24 +69,28 @@ for i in range(img.shape[0]):
     for j in range(img.shape[1]):
         grid.append([i,j])
 
-I0 = fit(values_i, ind_i, normalize(np.array(grid)), img)
-I0_grad = fit(values_g, ind_g, normalize(np.array(grid)), grad)
+I0 = fit(values_i, ind_i, normalize(np.array(grid), img.shape[0]), img)
+I0_grad = fit(values_g, ind_g, normalize(np.array(grid), img.shape[0]), grad)
 
 # Calculate att and scattering
 a = grad / I0_grad
 b = img - I0 * a
 
 # Impose binary mask on smear
-bin_ind = np.argwhere(a<-30)
-binary_mask = np.ones((img.shape[0], img.shape[1]))
+bin_ind = np.argwhere(np.abs(a)<0.5)
+binary_mask = np.zeros((img.shape[0], img.shape[1]))
 for index in bin_ind:
-    binary_mask[index[0], index[1]] = 0
+    binary_mask[index[0], index[1]] = 1
 
-plt.subplot(2,2,1)
-plt.imshow(img, cmap='gray')
-plt.subplot(2,2,2)
-plt.imshow(a, cmap='gray')
-plt.subplot(2,2,3)
-plt.imshow(b, cmap='gray')
-plt.show()
+# plt.subplot(2,2,1)
+# plt.imshow(img, cmap='gray')
+# plt.subplot(2,2,2)
+# plt.imshow(grad, cmap='gray')
+# plt.subplot(2,2,3)
+# plt.imshow(a, cmap='gray')
+# plt.subplot(2,2,4)
+# cv2.imwrite('results/noisy_mask/cam0.png', binary_mask)
+plt.imsave('results/intermediate/a_test.png', a, cmap='gray')
+plt.imsave('results/intermediate/b_test.png', b, cmap='gray')
+plt.imsave('results/noisy_mask/test.png', binary_mask, cmap='gray')
 
