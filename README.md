@@ -5,7 +5,9 @@
 `bash runtest.bash`
 
 #### run your own pictures:
+`python3 code/contrast.py`
 
+`python3 code/grad_and_avg.py`
 
 `python3 code/smear_seg.py -i <your_avg_img_path> -g <your_avg_gradient_path> -t <threshold_for_binary_mask>` 
 
