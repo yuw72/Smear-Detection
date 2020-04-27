@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+import sys, getopt
 
 def change_index(img, indices):
     size = len(img)
@@ -49,48 +50,66 @@ def fit(values, indices, grid, img):
     
     return pred
 
+if __name__ == '__main__':
+    # default path
+    img_path = 'results/average_image/test.png'
+    grad_path = 'results/average_grad/test.png'
+    threshold = 0.5
 
-# Read grayscale image
-img = cv2.imread('results/average_image/test.png', 0)
-grad = cv2.imread('results/average_grad/test.png', 0)
-img = cv2.resize(img, (512, 512))
-grad = cv2.resize(grad, (512, 512))
+    # Handle system args
+    try:
+        opts, args = getopt.getopt(sys.argv[1:],"i:g:t:",["img=","gradient="])
+    except getopt.GetoptError:
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-i", "--img"):  # mode
+            img_path = arg
+        elif opt in ("-g", "--gradient"):
+            grad_path = arg
+        elif opt in ("-t", "--threshold"):
+            threshold = float(arg)
 
-# Find the top 50% pixels
-tot_pixels = img.shape[0] * img.shape[1]
-ind_i = np.argpartition(img.flatten(), -tot_pixels//2)[-tot_pixels//2:]
-ind_i, values_i = change_index(img, ind_i)
-ind_g = np.argpartition(grad.flatten(), -tot_pixels//2)[-tot_pixels//2:]
-ind_g, values_g = change_index(grad, ind_g)
+    # Read grayscale image
+    img = cv2.imread(img_path, 0)
+    grad = cv2.imread(grad_path, 0)
+    img = cv2.resize(img, (512, 512))
+    grad = cv2.resize(grad, (512, 512))
 
-# Fit the bivariate polynomial I0
-grid = []
-for i in range(img.shape[0]):
-    for j in range(img.shape[1]):
-        grid.append([i,j])
+    # Find the top 50% pixels
+    tot_pixels = img.shape[0] * img.shape[1]
+    ind_i = np.argpartition(img.flatten(), -tot_pixels//2)[-tot_pixels//2:]
+    ind_i, values_i = change_index(img, ind_i)
+    ind_g = np.argpartition(grad.flatten(), -tot_pixels//2)[-tot_pixels//2:]
+    ind_g, values_g = change_index(grad, ind_g)
 
-I0 = fit(values_i, ind_i, normalize(np.array(grid), img.shape[0]), img)
-I0_grad = fit(values_g, ind_g, normalize(np.array(grid), img.shape[0]), grad)
+    # Fit the bivariate polynomial I0
+    grid = []
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            grid.append([i,j])
 
-# Calculate att and scattering
-a = grad / I0_grad
-b = img - I0 * a
+    I0 = fit(values_i, ind_i, normalize(np.array(grid), img.shape[0]), img)
+    I0_grad = fit(values_g, ind_g, normalize(np.array(grid), img.shape[0]), grad)
 
-# Impose binary mask on smear
-bin_ind = np.argwhere(np.abs(a)<0.5)
-binary_mask = np.zeros((img.shape[0], img.shape[1]))
-for index in bin_ind:
-    binary_mask[index[0], index[1]] = 1
+    # Calculate att and scattering
+    a = grad / I0_grad
+    b = img - I0 * a
 
-# plt.subplot(2,2,1)
-# plt.imshow(img, cmap='gray')
-# plt.subplot(2,2,2)
-# plt.imshow(grad, cmap='gray')
-# plt.subplot(2,2,3)
-# plt.imshow(a, cmap='gray')
-# plt.subplot(2,2,4)
-# cv2.imwrite('results/noisy_mask/cam0.png', binary_mask)
-plt.imsave('results/intermediate/a_test.png', a, cmap='gray')
-plt.imsave('results/intermediate/b_test.png', b, cmap='gray')
-plt.imsave('results/noisy_mask/test.png', binary_mask, cmap='gray')
+    # Impose binary mask on smear
+    bin_ind = np.argwhere(np.abs(a)<threshold)
+    binary_mask = np.zeros((img.shape[0], img.shape[1]))
+    for index in bin_ind:
+        binary_mask[index[0], index[1]] = 1
+
+    # plt.subplot(2,2,1)
+    # plt.imshow(img, cmap='gray')
+    # plt.subplot(2,2,2)
+    # plt.imshow(grad, cmap='gray')
+    # plt.subplot(2,2,3)
+    # plt.imshow(a, cmap='gray')
+    # plt.subplot(2,2,4)
+    # cv2.imwrite('results/noisy_mask/cam0.png', binary_mask)
+    plt.imsave('results/intermediate/a_test.png', a, cmap='gray')
+    plt.imsave('results/intermediate/b_test.png', b, cmap='gray')
+    plt.imsave('results/noisy_mask/test.png', binary_mask, cmap='gray')
 
